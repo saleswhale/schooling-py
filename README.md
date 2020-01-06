@@ -1,6 +1,6 @@
 # Schooling
 
-A simply Python wrapper around Redis streams.
+A simple Python wrapper around Redis streams.
 
 ## Installation
 
