@@ -16,6 +16,11 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     packages=setuptools.find_packages(exclude=['tests']),
     install_requires=requirements,
+    test_requires=[
+        'pytest',
+        'pytest-cov',
+        'pylint'
+    ],
     classifiers=[
         'Programming Language :: Python :: 3',
     ],
