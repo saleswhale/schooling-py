@@ -4,6 +4,18 @@ A simple Python wrapper around Redis streams.
 
 ## Installation
 
+### Requirements
+
+Add the following line to `requirements.txt`
+```bash
+-e git+ssh://git@github.com/saleswhale/schooling-py.git#egg=schooling
+```
+
+Then do
+```bash
+pip install -r requirements.txt
+```
+
 ### From Git
 Install via
 ```bash
