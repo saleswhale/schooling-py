@@ -62,11 +62,11 @@ class Consumer(StreamIO):
     """
 
     def __init__(self,
-                 redis_url,
                  topic,
                  group,
                  consumer,
                  processor,
+                 redis_url='redis://localhost:6379/0',
                  batch_size=BATCH_SIZE,
                  block=DEFAULT_BLOCK,
                  backoff=ExponentialBackoff,
@@ -144,7 +144,11 @@ class Producer(StreamIO):
     Wrapper for Redis producer.
     """
 
-    def __init__(self, redis_url, topic, cap=DEFAULT_CAP, logger=None):
+    def __init__(self,
+                 topic,
+                 redis_url='redis://localhost:6379/0',
+                 cap=DEFAULT_CAP,
+                 logger=None):
         super().__init__(redis_url, topic, logger)
         self.cap = cap
 
