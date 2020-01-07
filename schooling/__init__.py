@@ -1,2 +1,2 @@
 from schooling.processor import Processor
-from schooling.stream import Publisher, Subscriber
+from schooling.stream import Consumer, Producer

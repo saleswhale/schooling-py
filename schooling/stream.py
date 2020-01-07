@@ -56,9 +56,9 @@ class Stream:
         return self.redis_conn.xtrim(self.topic, maxlen)
 
 
-class Subscriber(Stream):
+class Consumer(Stream):
     """
-    Wrapper for Redis stream subscriber.
+    Wrapper for Redis consumer.
     """
 
     def __init__(self,
@@ -138,10 +138,10 @@ class Subscriber(Stream):
         self.logger.info('No failed events.')
 
 
-class Publisher(Stream):
+class Producer(Stream):
 
     """
-    Wrapper for Redis stream publisher.
+    Wrapper for Redis producer.
     """
 
     def __init__(self, redis_url, topic, cap=DEFAULT_CAP, logger=None):
