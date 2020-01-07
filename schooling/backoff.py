@@ -13,5 +13,5 @@ class LinearBackoff:
 
     @staticmethod
     def timeout_ms(retries):
-        return int(MIN_TIMEOUT * retries * SECONDS)
+        return int(MIN_TIMEOUT + retries * SECONDS)
 
