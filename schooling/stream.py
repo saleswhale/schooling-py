@@ -16,7 +16,7 @@ BATCH_SIZE = 1000
 DEFAULT_CAP = 100_000
 
 
-class Stream:
+class StreamIO:
 
     """
     Wrapper for Redis stream.
@@ -56,7 +56,7 @@ class Stream:
         return self.redis_conn.xtrim(self.topic, maxlen)
 
 
-class Consumer(Stream):
+class Consumer(StreamIO):
     """
     Wrapper for Redis consumer.
     """
@@ -138,7 +138,7 @@ class Consumer(Stream):
         self.logger.info('No failed events.')
 
 
-class Producer(Stream):
+class Producer(StreamIO):
 
     """
     Wrapper for Redis producer.
