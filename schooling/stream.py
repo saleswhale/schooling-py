@@ -92,8 +92,8 @@ class Consumer(StreamIO):
 
     def process_event(self, *events):
         for event in events:
-            event_id = event[0].decode('utf-8')
-            if event_id:
+            if event[0]:
+                event_id = event[0].decode('utf-8')
                 try:
                     self.logger.info(f'Processing {event_id}.')
                     self.processor(json.loads(event[1][b'json']))
@@ -102,7 +102,7 @@ class Consumer(StreamIO):
                 except Exception as e:
                     self.logger.error(f'Failed {event_id} due to {e}.')
 
-    def process_batch(self):
+    def process(self):
         self.__process_failed_events()
         self.__process_unseen_events()
 
