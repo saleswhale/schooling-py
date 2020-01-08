@@ -17,7 +17,6 @@ DEFAULT_CAP = 100_000
 
 
 class StreamIO:
-
     """
     Wrapper for Redis stream.
     """
@@ -139,7 +138,6 @@ class Consumer(StreamIO):
 
 
 class Producer(StreamIO):
-
     """
     Wrapper for Redis producer.
     """
