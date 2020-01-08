@@ -27,7 +27,7 @@ class StreamIO:
         self.redis_url = redis_url
         self.redis_host = parsed_url.netloc.split(':')[0]
         self.redis_port = parsed_url.port
-        self.redis_db = int(re.sub('[^0-9]', '', parsed_url.path))
+        self.redis_db = int(re.sub('[^0-9]', '', parsed_url.path or '0'))
         self.redis_conn = Redis(host=self.redis_host,
                                 port=self.redis_port,
                                 db=self.redis_db)
