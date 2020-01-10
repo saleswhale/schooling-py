@@ -1,5 +1,7 @@
 # Schooling
 
+[![Saleswhale](https://circleci.com/gh/saleswhale/schooling-py.svg?style=svg&circle-token=1dd355185288ab0765957af5a11d27c3eef5bc2d)](https://circleci.com/gh/saleswhale/schooling-py)
+
 A simple Python wrapper around Redis streams.
 
 ## Installation
@@ -69,7 +71,7 @@ def process_messages(c):
         c.process()
         time.sleep(random.randint(1, 5))
 
-# If redis_url is not provided, it defaults to 'redis://localhost:6379/1'
+# If redis_url is not provided, it defaults to 'redis://localhost:6379/0'
 producer = Producer('test_topic')
 consumer_1 = Consumer('test_topic',
                       'test_group',
