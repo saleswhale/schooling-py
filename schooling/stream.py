@@ -28,14 +28,8 @@ class StreamIO:
                  logger=None):
         self.topic = topic
         if redis is None:
-            parsed_url = urlparse(redis_url)
             self.redis_url = redis_url
-            redis_host = parsed_url.netloc.split(':')[0]
-            redis_port = parsed_url.port
-            redis_db = int(re.sub('[^0-9]', '', parsed_url.path or '0'))
-            self.redis = Redis(host=redis_host,
-                               port=redis_port,
-                               db=redis_db)
+            self.redis = Redis.from_url(redis_url)
         else:
             self.redis = redis
         self.logger = logger or StreamLogger(self.topic)

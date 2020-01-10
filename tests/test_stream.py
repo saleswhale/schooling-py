@@ -111,10 +111,10 @@ def test_streamio_init(streamio):
     assert(isinstance(streamio.redis, MockRedis))
 
 def test_stream_init_wurl(monkeypatch):
-    monkeypatch.setattr(schooling.stream, 'Redis', MockRedis)
-    streamio = StreamIO('test_topic')
+    monkeypatch.setattr(schooling.stream.Redis, 'from_url', MockRedis)
+    streamio = StreamIO('test_topic', redis_url='redis://test_url:1/1')
     assert(streamio.topic == 'test_topic')
-    assert(streamio.redis_url == 'redis://localhost:6379/0')
+    assert(streamio.redis_url == 'redis://test_url:1/1')
     assert(isinstance(streamio.redis, MockRedis))
 
 def test_streamio_count(streamio):
