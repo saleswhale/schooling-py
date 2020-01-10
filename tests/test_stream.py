@@ -110,6 +110,13 @@ def test_streamio_init(streamio):
     assert(streamio.topic == 'test_topic')
     assert(isinstance(streamio.redis, MockRedis))
 
+def test_stream_init_wurl(monkeypatch):
+    monkeypatch.setattr(schooling.stream, 'Redis', MockRedis)
+    streamio = StreamIO('test_topic')
+    assert(streamio.topic == 'test_topic')
+    assert(streamio.redis_url == 'redis://localhost:6379/0')
+    assert(isinstance(streamio.redis, MockRedis))
+
 def test_streamio_count(streamio):
     assert(streamio.count() == 0)
 
