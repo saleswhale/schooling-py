@@ -34,6 +34,16 @@ Navigate into the root directory `schooling-py` and run
 python setup.py install
 ```
 
+## Download
+
+Download the archive by running
+```bash
+mkdir -p vendor
+pip download --no-deps -d ./vendor -e git+ssh://git@github.com/saleswhale/schooling-py.git#schooling
+```
+
+Then install from path.
+
 ## Usage Guide
 
 To test out the library, do

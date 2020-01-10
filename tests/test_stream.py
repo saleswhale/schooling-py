@@ -95,17 +95,20 @@ class MockRedis(Mock):
         return claimed
 
 @pytest.fixture
-def streamio(monkeypatch):
-    monkeypatch.setattr(schooling.stream, "Redis", MockRedis())
-    return StreamIO('redis://localhost:6379', 'test_topic', Mock())
+def mock_logger():
+    return Mock()
+
+@pytest.fixture
+def mock_redis():
+    return MockRedis()
+
+@pytest.fixture
+def streamio(mock_redis, mock_logger):
+    return StreamIO('test_topic', redis=mock_redis, logger=mock_logger)
 
 def test_streamio_init(streamio):
     assert(streamio.topic == 'test_topic')
-    assert(streamio.redis_url == 'redis://localhost:6379')
-    assert(streamio.redis_host == 'localhost')
-    assert(streamio.redis_port == 6379)
-    assert(streamio.redis_db == 0)
-    assert(isinstance(streamio.redis_conn, MockRedis))
+    assert(isinstance(streamio.redis, MockRedis))
 
 def test_streamio_count(streamio):
     assert(streamio.count() == 0)
@@ -120,18 +123,16 @@ def test_streamio_list_groups(streamio):
 
 def test_streamio_trim(streamio):
     streamio.trim(1)
-    streamio.redis_conn.xtrim.assert_called_once_with(streamio.topic, 1)
+    streamio.redis.xtrim.assert_called_once_with(streamio.topic, 1)
 
 @pytest.fixture
-def producer(monkeypatch):
-    monkeypatch.setattr(schooling.stream, "Redis", MockRedis())
-    return Producer('test_topic', logger=Mock())
+def producer(mock_redis, mock_logger):
+    return Producer('test_topic', redis=mock_redis, logger=mock_logger)
 
 def test_producer_init(producer):
-    assert(producer.redis_url == 'redis://localhost:6379/0')
     assert(producer.topic == 'test_topic')
     assert(producer.cap == DEFAULT_CAP)
-    assert(isinstance(producer.redis_conn, MockRedis))
+    assert(isinstance(producer.redis, MockRedis))
 
 def test_producer_publish_one(producer):
     assert(producer.count() == 0)
@@ -161,19 +162,20 @@ def error_processor():
     return Processor(raise_error)
 
 @pytest.fixture
-def consumer(monkeypatch, processor):
-    monkeypatch.setattr(schooling.stream, "Redis", MockRedis())
+def consumer(processor, mock_redis, mock_logger):
     return Consumer('test_topic',
                     'test_group',
                     'test_consumer',
                     processor,
-                    logger=Mock())
+                    redis=mock_redis,
+                    logger=mock_logger)
 
 def test_consumer_init(consumer):
     assert(consumer.topic == 'test_topic')
     assert(consumer.group == 'test_group')
     assert(consumer.consumer == 'test_consumer')
     assert(isinstance(consumer.processor, Processor))
+    assert(isinstance(consumer.redis, MockRedis))
 
 def test_consumer_info(consumer):
     assert(consumer.group in consumer.info().keys())
@@ -184,19 +186,17 @@ def test_consumer_create_group(consumer):
 
 def test_consumer_process_events(consumer):
     consumer.process_event((b'0', {b'json': json.dumps({'hello': 'world'})}))
-    consumer.redis_conn.xack.assert_called_once()
+    consumer.redis.xack.assert_called_once()
 
 def test_consumer_process_events_errors(consumer, error_processor):
     consumer.processor = error_processor
     consumer.process_event((b'0', {b'json': json.dumps({'hello': 'world'})}))
-    consumer.redis_conn.xack.assert_not_called()
+    consumer.redis.xack.assert_not_called()
     consumer.logger.error.assert_called_once()
 
-def test_consumer_process(monkeypatch, producer, consumer):
-    monkeypatch.setattr(producer, 'redis_conn', consumer.redis_conn)
+def test_consumer_process(producer, consumer):
     producer.publish({'test': 'message'})
     assert('test_group' in consumer.list_groups())
     consumer.process()
     consumer.logger.error.assert_not_called()
-    consumer.redis_conn.xack.assert_called_once()
-
+    consumer.redis.xack.assert_called_once()
