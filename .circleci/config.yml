@@ -31,7 +31,7 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            pytest --cov=~/schooling-py/schooling --cov-report=html -v -p no:warnings
+            pytest --cov=~/schooling-py/schooling --cov-report=html -v -p no:warnings tests
 
       - store_artifacts:
           path: ~/schooling-py/htmlcov
