@@ -27,13 +27,14 @@ class StreamIO:
                  redis_url='redis://localhost:6379/0',
                  logger=None):
         self.topic = topic
+        self.logger = logger or StreamLogger(self.topic)
         if redis is None:
             self.redis_url = redis_url
             self.redis = Redis.from_url(redis_url)
+            self.logger.info(f'Connected to {redis_url}.')
         else:
             self.redis = redis
-        self.logger = logger or StreamLogger(self.topic)
-        self.logger.info(f'Connected to {redis_url}.')
+            self.logger.info(f'Connected to Redis.')
         self.logger.info(f'Listening for {self.topic}.')
 
     def info(self):
