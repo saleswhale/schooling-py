@@ -100,7 +100,7 @@ class Consumer(StreamIO):
                     self.logger.info(f'Processing {event_id}.')
                     self.processor(json.loads(event[1][b'json']))
                     self.redis.xack(self.topic, self.group, event_id)
-                    self.logger.info(f'{event_id} Success.')
+                    self.logger.info(f'{event_id} succeeded.')
                 except Exception as e:
                     self.logger.error(f'Failed {event_id} due to {e}.')
 
@@ -109,7 +109,7 @@ class Consumer(StreamIO):
         self.__process_unseen_events()
 
     def __process_unseen_events(self):
-        self.logger.info(f'Processing unseen events in {self.topic}.')
+        self.logger.debug(f'Processing unseen events in {self.topic}.')
         streams = { self.topic: '>' }
         unseen_events = self.redis.xreadgroup(self.group,
                                               self.consumer,
@@ -117,10 +117,10 @@ class Consumer(StreamIO):
                                               block=self.block)
         if len(unseen_events):
             self.process_event(*unseen_events[0][1])
-        self.logger.info('No new events.')
+        self.logger.debug('No new events.')
 
     def __process_failed_events(self):
-        self.logger.info(f'Processing failed events in {self.topic}.')
+        self.logger.debug(f'Processing failed events in {self.topic}.')
         pending_events = self.redis.xpending_range(self.topic,
                                                    self.group,
                                                    '-',
@@ -137,7 +137,7 @@ class Consumer(StreamIO):
                                               [event_id])
             if len(failed_events):
                 self.process_event(*failed_events)
-        self.logger.info('No failed events.')
+        self.logger.debug('No failed events.')
 
 
 class Producer(StreamIO):
@@ -155,9 +155,10 @@ class Producer(StreamIO):
         self.cap = cap
 
     def publish(self, *messages):
-        self.logger.info(f'Pushing message(s) to {self.topic}.')
-        return [self.redis.xadd(self.topic,
-                                {'json': json.dumps(msg)},
-                                maxlen=self.cap) \
+        published = [self.redis.xadd(self.topic,
+                                     {'json': json.dumps(msg)},
+                                     maxlen=self.cap) \
             for msg in messages]
+        self.logger.info(f'Published {published} to {self.topic}.')
+        return published
 
