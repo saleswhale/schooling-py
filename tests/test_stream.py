@@ -1,6 +1,6 @@
 import json
 import time
-from unittest.mock import Mock
+from unittest.mock import call, Mock
 
 import pytest
 
@@ -72,6 +72,7 @@ class MockRedis(Mock):
             self.pending[key][group] = {}
         for k, v in filtered_events:
             self.pending[key][group][k] = v
+            self.pending[key][group][k]['message_id'] = k
             self.pending[key][group][k]['consumer'] = consumer
             self.pending[key][group][k]['times_delivered'] = 1
             max_id = max(int(k), max_id)
@@ -80,19 +81,25 @@ class MockRedis(Mock):
 
     def xpending_range(self, key, group, start, end, batch_size):
         if group in self.pending[key].keys():
-            return [(k, v) for k, v in self.pending[key][group][:batch_size]]
+            return [v for k, v in self.pending[key][group].items()][:batch_size]
         return []
 
     def xclaim(self, key, group, consumer, timeout, event_ids):
         current_time = time.time()
         claimed = []
         for k, v in self.pending[key][group].items():
-            if k in event_ids:
+            if k.decode('utf-8') in event_ids:
                 if v['insert_time'] < current_time - timeout:
                     self.pending[key][group][k]['consumer'] = consumer
                     self.pending[key][group][k]['insert_time'] = current_time
                     claimed.append((k, v))
         return claimed
+
+class MockBackoff:
+
+    @staticmethod
+    def timeout_ms(retries):
+        return 0
 
 @pytest.fixture
 def mock_logger():
@@ -110,9 +117,11 @@ def test_streamio_init(streamio):
     assert(streamio.topic == 'test_topic')
     assert(isinstance(streamio.redis, MockRedis))
 
-def test_stream_init_wurl(monkeypatch):
+def test_stream_init_wurl(monkeypatch, mock_logger):
     monkeypatch.setattr(schooling.stream.Redis, 'from_url', MockRedis)
-    streamio = StreamIO('test_topic', redis_url='redis://test_url:1/1')
+    streamio = StreamIO('test_topic',
+                        redis_url='redis://test_url:1/1',
+                        logger=mock_logger)
     assert(streamio.topic == 'test_topic')
     assert(streamio.redis_url == 'redis://test_url:1/1')
     assert(isinstance(streamio.redis, MockRedis))
@@ -207,3 +216,17 @@ def test_consumer_process(producer, consumer):
     consumer.process()
     consumer.logger.error.assert_not_called()
     consumer.redis.xack.assert_called_once()
+
+def test_consumer_process_pending_events(producer,
+                                         consumer,
+                                         processor,
+                                         error_processor):
+    consumer.backoff = MockBackoff
+    consumer.processor = error_processor
+    ids = producer.publish({'test': 'message'}, {'test': 'message 2'})
+    calls = [call(consumer.topic, consumer.group, event_id) for event_id in ids]
+    consumer.process()
+    consumer.redis.xack.assert_not_called()
+    consumer.processor = processor
+    consumer.process()
+    consumer.redis.xack.assert_has_calls(calls)
