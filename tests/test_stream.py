@@ -182,7 +182,7 @@ def consumer(processor, mock_redis, mock_logger):
     return Consumer('test_topic',
                     'test_group',
                     'test_consumer',
-                    processor,
+                    processor=processor,
                     redis=mock_redis,
                     logger=mock_logger)
 
@@ -222,11 +222,14 @@ def test_consumer_process_pending_events(producer,
                                          processor,
                                          error_processor):
     consumer.backoff = MockBackoff
-    consumer.processor = error_processor
     ids = producer.publish({'test': 'message'}, {'test': 'message 2'})
     calls = [call(consumer.topic, consumer.group, event_id) for event_id in ids]
-    consumer.process()
+    consumer.process(error_processor)
     consumer.redis.xack.assert_not_called()
-    consumer.processor = processor
-    consumer.process()
+    consumer.process(processor)
     consumer.redis.xack.assert_has_calls(calls)
+
+def test_consumer_no_processor(consumer):
+    with pytest.raises(Exception):
+        consumer.processor = None
+        consumer.process()

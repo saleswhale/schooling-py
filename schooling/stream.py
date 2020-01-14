@@ -66,7 +66,7 @@ class Consumer(StreamIO):
                  topic,
                  group,
                  consumer,
-                 processor,
+                 processor=None,
                  redis=None,
                  redis_url='redis://localhost:6379/0',
                  batch_size=BATCH_SIZE,
@@ -104,7 +104,11 @@ class Consumer(StreamIO):
                 except Exception as e:
                     self.logger.error(f'Failed {event_id} due to {e}.')
 
-    def process(self):
+    def process(self, processor=None):
+        self.processor = processor or self.processor
+        if self.processor is None:
+            self.logger.error('No processing function defined.')
+            raise Exception('Processing function is invalid.')
         self.__process_failed_events()
         self.__process_unseen_events()
 
