@@ -50,8 +50,7 @@ class StreamIO:
 
     def list_groups(self):
         self.logger.info(f'Retrieving consumer groups in {self.topic}.')
-        return [group['name'] \
-            for group in self.redis.xinfo_groups(self.topic)]
+        return self.redis.xinfo_groups(self.topic)
 
     def trim(self, maxlen):
         return self.redis.xtrim(self.topic, maxlen)

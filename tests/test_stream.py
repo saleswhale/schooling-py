@@ -198,7 +198,7 @@ def test_consumer_info(consumer):
     assert('groups_info' in consumer.info().keys())
 
 def test_consumer_create_group(consumer):
-    assert('test_group' in consumer.list_groups())
+    assert(len(consumer.list_groups()) == 1)
 
 def test_consumer_process_events(consumer):
     consumer.process_event((b'0', {b'json': json.dumps({'hello': 'world'})}))
@@ -212,7 +212,6 @@ def test_consumer_process_events_errors(consumer, error_processor):
 
 def test_consumer_process(producer, consumer):
     producer.publish({'test': 'message'})
-    assert('test_group' in consumer.list_groups())
     consumer.process()
     consumer.logger.error.assert_not_called()
     consumer.redis.xack.assert_called_once()
