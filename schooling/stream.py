@@ -162,6 +162,7 @@ class Producer(StreamIO):
                                      {'json': json.dumps(msg)},
                                      maxlen=self.cap) \
             for msg in messages]
-        self.logger.info(f'Published {published} to {self.topic}.')
+        self.logger.info(f'Published messages {published[0]} to ' \
+            f'{published[:-1]} to {self.topic}.')
         return published
 
