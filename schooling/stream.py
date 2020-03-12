@@ -163,6 +163,6 @@ class Producer(StreamIO):
                                      maxlen=self.cap) \
             for msg in messages]
         self.logger.info(f'Published messages {published[0]} to ' \
-            f'{published[:-1]} to {self.topic}.')
+            f'{published[-1]} to {self.topic}.')
         return published
 
