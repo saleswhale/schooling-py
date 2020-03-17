@@ -51,6 +51,12 @@ class StreamIO:
     def list_groups(self):
         self.logger.info(f'Retrieving consumer groups in {self.topic}.')
         return self.redis.xinfo_groups(self.topic)
+    
+    def delete(self, *message_ids):
+        self.logger.info(f'Deleting messages from {self.topic}.')
+        deleted = self.redis.xdel(self.topic, message_ids)
+        self.logger.info(f'Deleted {deleted} messages from {self.topic}.')
+        return deleted
 
     def trim(self, maxlen):
         return self.redis.xtrim(self.topic, maxlen)
